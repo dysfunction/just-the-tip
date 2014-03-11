@@ -99,9 +99,18 @@ Git.prototype.getFile = function (tree, file, callback) {
 };
 
 /* Callback params (err <Buffer>, data <Buffer>) */
-Git.prototype.getTree = function (tree, callback) {
+Git.prototype.getTree = function (tree, recursive, callback) {
 	this.queue.add(function () {
-		gitBuffer(this.path, ['ls-tree', tree], queueNext(this.queue, callback));
+		var opts = ['ls-tree'];
+		var cb = callback || recursive;
+
+		if (recursive === true) {
+			opts.push('-r');
+		}
+
+		opts.push(tree);
+
+		gitBuffer(this.path, opts, queueNext(this.queue, cb));
 	}.bind(this));
 };
 

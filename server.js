@@ -38,7 +38,7 @@ function respond(res) {
 
 function dispatch(res, repo, task) {
 	if (task === 'list') {
-		return repo.getTree('HEAD', respond(res));
+		return repo.getTree('HEAD', true, respond(res));
 	}
 
 	return output(res, 500, { error: 'Invalid dispatch task' });
