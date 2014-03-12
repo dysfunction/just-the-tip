@@ -91,6 +91,18 @@ Git.prototype.git = function (command, callback) {
 	}.bind(this));
 };
 
+Git.prototype.stream = function (command, onError, onData, onComplete) {
+	var cmd = command;
+
+	if (typeof command === 'string') {
+		cmd = command.split(/ /);
+	}
+
+	this.queue.add(function () {
+		gitStream(this.path, cmd, onError, onData, queueNext(this.queue, onComplete));
+	}.bind(this));
+}
+
 /* Callback params: (err <Buffer>, data <Buffer>) */
 Git.prototype.getFile = function (tree, file, callback) {
 	this.queue.add(function () {
