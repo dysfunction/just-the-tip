@@ -32,16 +32,36 @@ function respond(res) {
 			return output(res, 500, err);
 		}
 
-		return output(res, 200, data);
+		output(res, 200, data);
 	}
+}
+
+function listTree(res, repo) {
+	repo.getTree('HEAD', true, function (err, data) {
+		if (err) {
+			return output(res, 500, err);
+		}
+
+		var files = {};
+		data.toString().split(/\r?\n/).forEach(function (line) {
+			var matches = line.match(/\s([^\t\s]+)\t(.+)$/);
+			if (!matches) {
+				return;
+			}
+
+			files[matches[2]] = matches[1];
+		});
+
+		return output(res, 200, { files: files });
+	});
 }
 
 function dispatch(res, repo, task) {
 	if (task === 'list') {
-		return repo.getTree('HEAD', true, respond(res));
+		return listTree(res, repo);
 	}
 
-	return output(res, 500, { error: 'Invalid dispatch task' });
+	output(res, 500, { error: 'Invalid dispatch task' });
 }
 
 require('http').createServer(function (req, res) {
