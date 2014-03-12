@@ -52,7 +52,7 @@ function listTree(res, repo) {
 			files[matches[2]] = matches[1];
 		});
 
-		return output(res, 200, { files: files });
+		output(res, 200, { files: files });
 	});
 }
 
@@ -65,7 +65,7 @@ function dispatch(res, repo, task) {
 }
 
 require('http').createServer(function (req, res) {
-	return Object.keys(config.repos).some(function (repo) {
+	return Object.keys(config.server.repos).some(function (repo) {
 		var matches = req.url.match(/^\/([^\/]+)/);
 
 		if (!matches) {
@@ -76,7 +76,7 @@ require('http').createServer(function (req, res) {
 			return false;
 		}
 
-		dispatch(res, new Git(config.repos[repo]), 'list');
+		dispatch(res, new Git(config.server.repos[repo]), 'list');
 		return true;
 	}) || output(res, 404, { error: 'Not found' });
-}).listen(config.port || 8080);
+}).listen(config.server.port || 8080);
