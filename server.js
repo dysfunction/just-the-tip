@@ -56,17 +56,34 @@ function listTree(res, repo) {
 	});
 }
 
-function dispatch(res, repo, task) {
-	if (task === 'list') {
-		return listTree(res, repo);
-	}
+function serveFile(res, repo, file) {
+	var writeStarted = false;
 
-	output(res, 500, { error: 'Invalid dispatch task' });
+	repo.stream(
+		['cat-file', '-p', 'HEAD:' + file],
+		function (err) {
+			output(res, 500, { error: err.toString() });
+		},
+		function (data) {
+			if (!writeStarted) {
+				writeStarted = true;
+				res.writeHead(200, {
+					'Content-Type': 'application/octet-stream',
+					'Connection': 'close'
+				});
+			}
+
+			res.write(data);
+		},
+		function () {
+			res.end();
+		}
+	);
 }
 
 require('http').createServer(function (req, res) {
 	return Object.keys(config.server.repos).some(function (repo) {
-		var matches = req.url.match(/^\/([^\/]+)/);
+		var git, matches = req.url.match(/^\/([^\/]+)\/?(.*)$/);
 
 		if (!matches) {
 			return false;
@@ -76,7 +93,14 @@ require('http').createServer(function (req, res) {
 			return false;
 		}
 
-		dispatch(res, new Git(config.server.repos[repo]), 'list');
+		git = new Git(config.server.repos[repo]);
+
+		if (matches[2]) {
+			serveFile(res, git, matches[2]);
+		} else {
+			listTree(res, git);
+		}
+
 		return true;
 	}) || output(res, 404, { error: 'Not found' });
 }).listen(config.server.port || 8080);
