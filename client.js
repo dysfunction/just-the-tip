@@ -32,7 +32,7 @@ Client.prototype.readTree = function (folder, res, callback) {
 	res.on('end', function (data) {
 		this.diffTree(folder, buffer.join().toString(), callback);
 	}.bind(this));
-}
+};
 
 Client.prototype.diffTree = function (folder, remoteTree, callback) {
 	var localTree, localTreeFile = folder + '/sync-tree.json';
@@ -67,7 +67,7 @@ Client.prototype.diffTree = function (folder, remoteTree, callback) {
 			callback();
 		}
 	});
-}
+};
 
 Client.prototype.sync = function (callback) {
 	var folders = Object.keys(this.folders);

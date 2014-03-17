@@ -33,7 +33,7 @@ function respond(res) {
 		}
 
 		output(res, 200, data);
-	}
+	};
 }
 
 function listTree(res, repo) {

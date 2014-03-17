@@ -101,7 +101,7 @@ Git.prototype.stream = function (command, onError, onData, onComplete) {
 	this.queue.add(function () {
 		gitStream(this.path, cmd, onError, onData, queueNext(this.queue, onComplete));
 	}.bind(this));
-}
+};
 
 /* Callback params: (err <Buffer>, data <Buffer>) */
 Git.prototype.getFile = function (tree, file, callback) {
