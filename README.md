@@ -30,7 +30,7 @@ The `repo-name` will become part of the fetch URL the client will use.
           }
         }
 
-2. Run `node client`
+2. Run `node sync`
 
 ## Explanation
 

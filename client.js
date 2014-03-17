@@ -60,9 +60,11 @@ function diffTree(folder, remoteTree) {
 	});
 }
 
-Object.keys(folders).forEach(function (folder) {
-	request(folders[folder], function (res) {
-		readTree(folder, res);
+module.exports.sync = function () {
+	Object.keys(folders).forEach(function (folder) {
+		request(folders[folder], function (res) {
+			readTree(folder, res);
+		});
 	});
-});
+};
 
