@@ -24,17 +24,17 @@ function Client(config) {
 	this.folders = config.folders;
 }
 
-Client.prototype.readTree = function (folder, res) {
+Client.prototype.readTree = function (folder, res, callback) {
 	var buffer = new BufferList();
 	res.on('data', function (data) {
 		buffer.add(data);
 	});
 	res.on('end', function (data) {
-		this.diffTree(folder, buffer.join().toString(), res);
+		this.diffTree(folder, buffer.join().toString(), callback);
 	}.bind(this));
 }
 
-Client.prototype.diffTree = function (folder, remoteTree) {
+Client.prototype.diffTree = function (folder, remoteTree, callback) {
 	var localTree, localTreeFile = folder + '/sync-tree.json';
 
 	try {
@@ -55,18 +55,36 @@ Client.prototype.diffTree = function (folder, remoteTree) {
 		if (!localTree[file] || localTree[file] !== remoteTree[file]) {
 			downloader.add(this.folders[folder] + file, folder + '/' + file);
 			localTree[file] = remoteTree[file];
+		} else if (typeof callback === 'function') {
+			callback();
 		}
 	}.bind(this));
 
 	downloader.start(function () {
 		fs.writeFileSync(localTreeFile, JSON.stringify(localTree));
+
+		if (typeof callback === 'function') {
+			callback();
+		}
 	});
 }
 
-Client.prototype.sync = function () {
-	Object.keys(this.folders).forEach(function (folder) {
+Client.prototype.sync = function (callback) {
+	var folders = Object.keys(this.folders);
+	var needed = folders.length;
+	var count = 0;
+
+	function completed() {
+		count += 1;
+
+		if (count === needed && typeof callback === 'function') {
+			callback();
+		}
+	}
+
+	folders.forEach(function (folder) {
 		request(this.folders[folder], function (res) {
-			this.readTree(folder, res);
+			this.readTree(folder, res, completed);
 		}.bind(this));
 	}.bind(this));
 };
